@@ -169,8 +169,8 @@ func getClusterName(clientset *kubernetes.Clientset) string {
 		}
 	}
 
-	log.Println("Cluster name not found, using default 'unknown-cluster'")
-	return "unknown-cluster"
+	log.Println("Cluster name not found, using default 'minikube'")
+	return "minikube"
 }
 
 func getKubernetesVersion(clientset *kubernetes.Clientset) string {
