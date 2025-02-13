@@ -16,21 +16,18 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-// HelmChartInfo represents each Helm release
 type HelmChartInfo struct {
 	ChartName string `json:"chart_name"`
 	Version   string `json:"version"`
 	Namespace string `json:"namespace"`
 }
 
-// ClusterInfo represents the full cluster metadata
 type ClusterInfo struct {
 	ClusterName string          `json:"cluster_name"`
 	KubeVersion string          `json:"kube_version"`
 	HelmCharts  []HelmChartInfo `json:"helm_charts"`
 }
 
-// HelmRelease represents Helm metadata inside the secret
 type HelmRelease struct {
 	Chart struct {
 		Metadata struct {
@@ -41,7 +38,7 @@ type HelmRelease struct {
 }
 
 func main() {
-	// Create in-cluster Kubernetes client
+
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		log.Fatalf("Failed to create cluster config: %v", err)
@@ -52,7 +49,6 @@ func main() {
 		log.Fatalf("Failed to create clientset: %v", err)
 	}
 
-	// Get cluster metadata
 	clusterName := getClusterName(clientset)
 	kubeVersion := getKubernetesVersion(clientset)
 
@@ -63,7 +59,6 @@ func main() {
 		log.Fatalf("Failed to list namespaces: %v", err)
 	}
 
-	// Iterate through namespaces and fetch Helm releases
 	for _, ns := range namespaces.Items {
 		secrets, err := clientset.CoreV1().Secrets(ns.Name).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: "owner=helm",
@@ -104,7 +99,6 @@ func main() {
 				continue
 			}
 
-			// Append to JSON output list
 			helmCharts = append(helmCharts, HelmChartInfo{
 				ChartName: helmRelease.Chart.Metadata.Name,
 				Version:   helmRelease.Chart.Metadata.Version,
@@ -119,17 +113,14 @@ func main() {
 		HelmCharts:  helmCharts,
 	}
 
-	// Convert JSON to a byte buffer
 	jsonData, err := json.MarshalIndent(output, "", "  ")
 	if err != nil {
 		log.Fatalf("Failed to convert to JSON: %v", err)
 	}
 
-	// Send the JSON data to the remote API
 	sendDataToAPI(jsonData)
 }
 
-// sendDataToAPI sends collected Helm release data to the remote API
 func sendDataToAPI(jsonData []byte) {
 	apiURL := os.Getenv("API_URL")
 	apiToken := os.Getenv("API_TOKEN")
@@ -163,7 +154,6 @@ func sendDataToAPI(jsonData []byte) {
 	}
 }
 
-// getClusterName fetches the cluster name from an environment variable or ConfigMap
 func getClusterName(clientset *kubernetes.Clientset) string {
 	if envClusterName := os.Getenv("CLUSTER_NAME"); envClusterName != "" {
 		log.Printf("Using cluster name from environment: %s", envClusterName)
@@ -183,7 +173,6 @@ func getClusterName(clientset *kubernetes.Clientset) string {
 	return "unknown-cluster"
 }
 
-// getKubernetesVersion fetches the Kubernetes API server version
 func getKubernetesVersion(clientset *kubernetes.Clientset) string {
 	versionInfo, err := clientset.Discovery().ServerVersion()
 	if err != nil {
