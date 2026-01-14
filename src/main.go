@@ -8,16 +8,14 @@ import (
 	"keepup-helm-scrapper/src/config"
 	"keepup-helm-scrapper/src/rules"
 	"log"
-	"maps"
 	"net/http"
 	"os"
 	"regexp"
-	"slices"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/rest"
 )
 
 type HelmChartInfo struct {
@@ -35,8 +33,8 @@ type ClusterInfo struct {
 func main() {
 	ctx := context.Background()
 
-	kubeconfig, err := clientcmd.BuildConfigFromFlags("", "/home/iops/.kube/smen-dev-eks.cfg")
-	//config, err := rest.InClusterConfig()
+	//kubeconfig, err := clientcmd.BuildConfigFromFlags("", "/home/.kube/minikube.cfg")
+	kubeconfig, err := rest.InClusterConfig()
 	if err != nil {
 		log.Fatalf("failed to get cluster config: %v", err)
 	}
@@ -46,26 +44,6 @@ func main() {
 		log.Fatalf("failed to create clientset: %v", err)
 	}
 
-	images := map[string]struct{}{}
-
-	namespaces, err := clientset.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
-	if err != nil {
-		log.Fatalf("failed to list namespaces: %v", err)
-	}
-
-	for _, ns := range namespaces.Items {
-		namespace := ns.Name
-
-		collectDeployments(ctx, clientset, namespace, images)
-		collectStatefulSets(ctx, clientset, namespace, images)
-		collectDaemonSets(ctx, clientset, namespace, images)
-	}
-
-	/*fmt.Println("Unique images:")
-	for img := range images {
-		fmt.Println(img)
-	}*/
-
 	rules, err := rules.LoadRules(config.GetEnvConfig().RULES_FILE)
 	if err != nil {
 		log.Fatalf("Can't configure RULES_FILE: %v", err)
@@ -73,27 +51,29 @@ func main() {
 
 	var versionRe = regexp.MustCompile(`(\d+)\.(\d+)(\.\d+)?`)
 
-	fmt.Println("Matched images:")
-	theSortedSliceOfKeys := slices.Sorted(maps.Keys(images))
+	imagesByNs, err := CollectNamespaceImages(ctx, clientset)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	var imagesInstalled []HelmChartInfo
-	for _, img := range theSortedSliceOfKeys {
-		for _, rule := range rules {
-			if rule.DetectionRegex.MatchString(img) {
-				fmt.Printf("Matched %s → %s\n", img, rule.ApplicationName)
-
-				fmt.Println("str str", rule.VersionRegex.FindString(img))
-				if v, ok := normalizeSemVer(rule.VersionRegex.FindString(img), versionRe); ok {
-					fmt.Printf("%-90s → %s\n", img, v)
-					imagesInstalled = append(imagesInstalled, HelmChartInfo{
-						ChartName: rule.ApplicationName,
-						Version:   v,
-						Namespace: "***masked***",
-					})
-				} else {
-					fmt.Printf("%-90s → no version\n", img)
+	for ns, images := range imagesByNs {
+		log.Println("Processing namespace:", ns)
+		for _, img := range images {
+			for _, rule := range rules {
+				if rule.DetectionRegex.MatchString(img) {
+					log.Printf("Matched %s -> %s\n", img, rule.ApplicationName)
+					if v, ok := normalizeSemVer(rule.VersionRegex.FindString(img), versionRe); ok {
+						log.Printf("Normalized %-90s -> %s\n", img, v)
+						imagesInstalled = append(imagesInstalled, HelmChartInfo{
+							ChartName: rule.ApplicationName,
+							Version:   v,
+							Namespace: ns,
+						})
+					} else {
+						log.Printf("%-90s -> no version\n", img)
+					}
 				}
-
-				break
 			}
 		}
 	}
@@ -110,38 +90,114 @@ func main() {
 		log.Fatalf("Failed to convert to JSON: %v", err)
 	}
 
+	log.Printf("Sending versions: %s", imagesInstalled)
 	sendDataToAPI(jsonData)
-	//fmt.Println(imagesInstalled)
 }
 
-func collectDeployments(ctx context.Context, cs *kubernetes.Clientset, ns string, images map[string]struct{}) {
-	list, _ := cs.AppsV1().Deployments(ns).List(ctx, metav1.ListOptions{})
-	for _, d := range list.Items {
-		collectPodSpec(d.Spec.Template.Spec, images)
+func CollectNamespaceImages(
+	ctx context.Context,
+	client kubernetes.Interface,
+) (map[string][]string, error) {
+
+	// accumulate to internal set
+	acc := make(map[string]map[string]struct{})
+
+	namespaces, err := client.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, err
 	}
-}
 
-func collectStatefulSets(ctx context.Context, cs *kubernetes.Clientset, ns string, images map[string]struct{}) {
-	list, _ := cs.AppsV1().StatefulSets(ns).List(ctx, metav1.ListOptions{})
-	for _, s := range list.Items {
-		collectPodSpec(s.Spec.Template.Spec, images)
+	for _, ns := range namespaces.Items {
+		nsName := ns.Name
+
+		if _, ok := acc[nsName]; !ok {
+			acc[nsName] = make(map[string]struct{})
+		}
+
+		if err := collectFromDeployments(ctx, client, nsName, acc); err != nil {
+			return nil, err
+		}
+		if err := collectFromStatefulSets(ctx, client, nsName, acc); err != nil {
+			return nil, err
+		}
+		if err := collectFromDaemonSets(ctx, client, nsName, acc); err != nil {
+			return nil, err
+		}
 	}
-}
 
-func collectDaemonSets(ctx context.Context, cs *kubernetes.Clientset, ns string, images map[string]struct{}) {
-	list, _ := cs.AppsV1().DaemonSets(ns).List(ctx, metav1.ListOptions{})
-	for _, d := range list.Items {
-		collectPodSpec(d.Spec.Template.Spec, images)
+	// normalize map[string]map[string]struct{} -> map[string][]string
+	result := make(map[string][]string)
+	for ns, images := range acc {
+		for img := range images {
+			result[ns] = append(result[ns], img)
+		}
 	}
+
+	return result, nil
 }
 
-func collectPodSpec(spec corev1.PodSpec, images map[string]struct{}) {
+func collectImages(
+	spec corev1.PodSpec,
+	ns string,
+	acc map[string]map[string]struct{},
+) {
 	for _, c := range spec.Containers {
-		images[c.Image] = struct{}{}
+		acc[ns][c.Image] = struct{}{}
 	}
 	for _, c := range spec.InitContainers {
-		images[c.Image] = struct{}{}
+		acc[ns][c.Image] = struct{}{}
 	}
+}
+
+func collectFromDeployments(
+	ctx context.Context,
+	client kubernetes.Interface,
+	ns string,
+	acc map[string]map[string]struct{},
+) error {
+	deploys, err := client.AppsV1().Deployments(ns).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, d := range deploys.Items {
+		collectImages(d.Spec.Template.Spec, ns, acc)
+	}
+	return nil
+}
+
+func collectFromStatefulSets(
+	ctx context.Context,
+	client kubernetes.Interface,
+	ns string,
+	acc map[string]map[string]struct{},
+) error {
+	sets, err := client.AppsV1().StatefulSets(ns).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, s := range sets.Items {
+		collectImages(s.Spec.Template.Spec, ns, acc)
+	}
+	return nil
+}
+
+func collectFromDaemonSets(
+	ctx context.Context,
+	client kubernetes.Interface,
+	ns string,
+	acc map[string]map[string]struct{},
+) error {
+	sets, err := client.AppsV1().DaemonSets(ns).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, d := range sets.Items {
+		collectImages(d.Spec.Template.Spec, ns, acc)
+	}
+	return nil
 }
 
 func normalizeSemVer(imageVer string, versionRe *regexp.Regexp) (string, bool) {

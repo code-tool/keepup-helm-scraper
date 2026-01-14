@@ -1,4 +1,4 @@
-# this is example rules
+# example rules
 docker:
 
   # f/e docker.io/bitnamilegacy/memcached:1.6.29-debian-12-r0
