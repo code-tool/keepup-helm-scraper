@@ -14,5 +14,5 @@ env:
   CLUSTER_NAME: ''
   API_TOKEN: ''
   API_URL: ''
-  APP_ENV: ''
+  APP_ENV: prod
   RULES_FILE: /config/rules.yaml
