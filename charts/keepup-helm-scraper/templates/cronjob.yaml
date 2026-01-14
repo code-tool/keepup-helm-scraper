@@ -27,7 +27,7 @@ spec:
                 - name: config
                   mountPath: "{{ .Values.env.RULES_FILE }}"
                   subPath: rules.yaml
-        volumes:
-          - name: config
-            configMap:
-              name: {{ .Release.Name }}
+          volumes:
+            - name: config
+              configMap:
+                name: {{ .Release.Name }}
