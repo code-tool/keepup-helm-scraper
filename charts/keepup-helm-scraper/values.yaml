@@ -4,7 +4,7 @@ image:
   pullPolicy: IfNotPresent
 
 cronjob:
-  schedule: "0 */12 * * *"
+  schedule: "0 */3 * * *"
   restartPolicy: Never
 
 rbac:
@@ -12,5 +12,7 @@ rbac:
 
 env:
   CLUSTER_NAME: ''
-  API_URL: ''
   API_TOKEN: ''
+  API_URL: ''
+  APP_ENV: ''
+  RULES_FILE: /config/rules.yaml

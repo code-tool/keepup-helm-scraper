@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}
+data:
+  rules.yaml: |
+    docker:
+    - applicationName: 'memcached'
+      detectionRegex: '\/memcached:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+    - applicationName: 'victoriametrics'
+      detectionRegex: 'victoriametrics\/victoria-metrics:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+    - applicationName: 'ingress-nginx'
+      detectionRegex: '\/ingress-nginx\/controller:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+    - applicationName: 'nginx-opentracing'
+      detectionRegex: '\/nginx-opentracing:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+    - applicationName: 'nginx'
+      detectionRegex: '(\/)?nginx:'
+      versionRegex: ':(\d+)\.(\d+)(\.\d+)?$'
+
+    - applicationName: 'headscale'
+      detectionRegex: 'ghcr\.io\/gurucomputing\/headscale-ui:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+    - applicationName: 'elasticsearch'
+      detectionRegex: 'docker\.elastic\.co\/elasticsearch\/elasticsearch:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+

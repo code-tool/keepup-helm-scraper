@@ -4,7 +4,20 @@ kind: ClusterRole
 metadata:
   name: {{ .Release.Name }}
 rules:
+rules:
   - apiGroups: [""]
-    resources: ["namespaces", "secrets"]
-    verbs: ["get", "list"]
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - list
+
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - statefulsets
+      - daemonsets
+    verbs:
+      - get
+      - list
 {{- end }}
