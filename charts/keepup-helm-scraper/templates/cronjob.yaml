@@ -18,10 +18,16 @@ spec:
             - name: helm-scraper
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
               imagePullPolicy: "{{ .Values.image.pullPolicy }}"
-              {{- if .Values.env }}
               env:
               {{- range $name, $value := .Values.env }}
                 - name: {{ $name }}
                   value: {{ $value }}
               {{- end }}
-              {{- end }}
+              volumeMounts:
+                - name: config
+                  mountPath: "{{ .Values.env.RULES_FILE }}"
+                  subPath: rules.yaml
+        volumes:
+          - name: config
+            configMap:
+              name: {{ .Release.Name }}

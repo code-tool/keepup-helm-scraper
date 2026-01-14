@@ -18,3 +18,8 @@ Deploy
 ```bash
 helm install keepup-helm-scraper/keepup-helm-scraper
 ```
+
+## Build Docker image
+```bash
+docker build -t ghcr.io/code-tool/keepup-helm-scraper:$(cat VERSION.txt) -f docker/Dockerfile .
+```

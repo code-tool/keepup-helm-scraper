@@ -1,0 +1,32 @@
+# example rules
+docker:
+
+  # f/e docker.io/bitnamilegacy/memcached:1.6.29-debian-12-r0
+  - applicationName: 'memcached'
+    detectionRegex: '\/memcached:'
+    versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+  # f/e victoriametrics/victoria-metrics:v1.132.0
+  - applicationName: 'victoriametrics'
+    detectionRegex: 'victoriametrics\/victoria-metrics:'
+    versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+  # f/e registry.k8s.io/ingress-nginx/controller:v1.14.1@sha256:f95a79b85fb93ac3de752c71a5c27d5ceae10a18b61904dec224c1c6a4581e47
+  - applicationName: 'ingress-nginx'
+    detectionRegex: '\/ingress-nginx\/controller:'
+    versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+  # f/e ACCOUNT.dkr.ecr.REGION.amazonaws.com/nginx-opentracing:0.40.0
+  - applicationName: 'nginx-opentracing'
+    detectionRegex: '\/nginx-opentracing:'
+    versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+  # f/e nginx:1.25
+  - applicationName: 'nginx'
+    detectionRegex: '(\/)?nginx:'
+    versionRegex: ':(\d+)\.(\d+)(\.\d+)?$'
+
+  # f/e ghcr.io/gurucomputing/headscale-ui:2025.08.23
+  - applicationName: 'headscale'
+    detectionRegex: 'ghcr\.io\/gurucomputing\/headscale-ui:'
+    versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
