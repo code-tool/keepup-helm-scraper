@@ -34,11 +34,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Docker Image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         env:
           DOCKER_BUILDKIT: 1
         with:
           context: .
+          platforms: linux/amd64,linux/arm64
           file: docker/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
