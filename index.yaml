@@ -13,6 +13,16 @@ entries:
   keepup-helm-scraper:
   - apiVersion: v2
     appVersion: 0.2.1
+    created: "2026-01-16T07:35:20.996590692Z"
+    description: A Helm chart for scrape charts release information.
+    digest: 9e9582bf472107027f59ca7d58c659008d6c2fbf9e9dc955a7ee84426b9cde1c
+    name: keepup-helm-scraper
+    type: application
+    urls:
+    - keepup-helm-scraper-0.3.4.tgz
+    version: 0.3.4
+  - apiVersion: v2
+    appVersion: 0.2.1
     created: "2026-01-16T07:10:50.804030221Z"
     description: A Helm chart for scrape charts release information.
     digest: 7b84b63fef12ceee083e4de96f642b0996632361f5b0bdf042bebc99982a1462
@@ -81,4 +91,4 @@ entries:
     urls:
     - keepup-helm-scraper-0.1.0.tgz
     version: 0.1.0
-generated: "2026-01-16T07:10:50.804073643Z"
+generated: "2026-01-16T07:35:20.996623424Z"
