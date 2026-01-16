@@ -5,6 +5,14 @@ metadata:
 data:
   rules.yaml: |
     docker:
+    - applicationName: 'rabbitmq'
+      detectionRegex: '\/rabbitmq:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+    - applicationName: 'redis'
+      detectionRegex: '\/redis:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
     - applicationName: 'memcached'
       detectionRegex: '\/memcached:'
       versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
@@ -13,6 +21,10 @@ data:
       detectionRegex: 'victoriametrics\/victoria-metrics:'
       versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
 
+    - applicationName: 'envoy'
+      detectionRegex: '\/envoy:'
+      versionRegex: '(:(.*-)?v(\d+)\.(\d+)(.\d+)?(-latest)?)$'
+
     - applicationName: 'ingress-nginx'
       detectionRegex: '\/ingress-nginx\/controller:'
       versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
@@ -20,6 +32,10 @@ data:
     - applicationName: 'nginx-opentracing'
       detectionRegex: '\/nginx-opentracing:'
       versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+    - applicationName: 'proxysql'
+      detectionRegex: '\/proxysql:'
+      versionRegex: ':(\d+)\.(\d+)(\.\d+)?$'
 
     - applicationName: 'nginx'
       detectionRegex: '(\/)?nginx:'
@@ -33,3 +49,6 @@ data:
       detectionRegex: 'docker\.elastic\.co\/elasticsearch\/elasticsearch:'
       versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
 
+    - applicationName: 'synapse'
+      detectionRegex: 'ghcr\.io\/code-tool\/matrix-stack/synapse:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
