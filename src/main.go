@@ -56,7 +56,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var imagesInstalled []HelmChartInfo
+	uniqImagesByNs := make(map[string]map[string]string)
 	for ns, images := range imagesByNs {
 		log.Println("Processing namespace:", ns)
 		for _, img := range images {
@@ -65,16 +65,26 @@ func main() {
 					log.Printf("Matched %s -> %s\n", img, rule.ApplicationName)
 					if v, ok := normalizeSemVer(rule.VersionRegex.FindString(img), versionRe); ok {
 						log.Printf("Normalized %-90s -> %s\n", img, v)
-						imagesInstalled = append(imagesInstalled, HelmChartInfo{
-							ChartName: rule.ApplicationName,
-							Version:   v,
-							Namespace: ns,
-						})
+						if _, ok := uniqImagesByNs[ns]; !ok {
+							uniqImagesByNs[ns] = make(map[string]string)
+						}
+						uniqImagesByNs[ns][rule.ApplicationName] = v
 					} else {
 						log.Printf("%-90s -> no version\n", img)
 					}
 				}
 			}
+		}
+	}
+
+	var imagesInstalled []HelmChartInfo
+	for ns, versionedImage := range uniqImagesByNs {
+		for v, i := range versionedImage {
+			imagesInstalled = append(imagesInstalled, HelmChartInfo{
+				ChartName: i,
+				Version:   v,
+				Namespace: ns,
+			})
 		}
 	}
 
@@ -100,7 +110,7 @@ func CollectNamespaceImages(
 ) (map[string][]string, error) {
 
 	// accumulate to internal set
-	acc := make(map[string]map[string]struct{})
+	acc := make(map[string]map[string]int)
 
 	namespaces, err := client.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 	if err != nil {
@@ -111,7 +121,7 @@ func CollectNamespaceImages(
 		nsName := ns.Name
 
 		if _, ok := acc[nsName]; !ok {
-			acc[nsName] = make(map[string]struct{})
+			acc[nsName] = make(map[string]int)
 		}
 
 		if err := collectFromDeployments(ctx, client, nsName, acc); err != nil {
@@ -139,13 +149,13 @@ func CollectNamespaceImages(
 func collectImages(
 	spec corev1.PodSpec,
 	ns string,
-	acc map[string]map[string]struct{},
+	acc map[string]map[string]int,
 ) {
 	for _, c := range spec.Containers {
-		acc[ns][c.Image] = struct{}{}
+		acc[ns][c.Image] = 1
 	}
 	for _, c := range spec.InitContainers {
-		acc[ns][c.Image] = struct{}{}
+		acc[ns][c.Image] = 1
 	}
 }
 
@@ -153,7 +163,7 @@ func collectFromDeployments(
 	ctx context.Context,
 	client kubernetes.Interface,
 	ns string,
-	acc map[string]map[string]struct{},
+	acc map[string]map[string]int,
 ) error {
 	deploys, err := client.AppsV1().Deployments(ns).List(ctx, metav1.ListOptions{})
 	if err != nil {
@@ -170,7 +180,7 @@ func collectFromStatefulSets(
 	ctx context.Context,
 	client kubernetes.Interface,
 	ns string,
-	acc map[string]map[string]struct{},
+	acc map[string]map[string]int,
 ) error {
 	sets, err := client.AppsV1().StatefulSets(ns).List(ctx, metav1.ListOptions{})
 	if err != nil {
@@ -187,7 +197,7 @@ func collectFromDaemonSets(
 	ctx context.Context,
 	client kubernetes.Interface,
 	ns string,
-	acc map[string]map[string]struct{},
+	acc map[string]map[string]int,
 ) error {
 	sets, err := client.AppsV1().DaemonSets(ns).List(ctx, metav1.ListOptions{})
 	if err != nil {
