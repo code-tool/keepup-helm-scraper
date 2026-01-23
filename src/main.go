@@ -79,7 +79,7 @@ func main() {
 
 	var imagesInstalled []HelmChartInfo
 	for ns, versionedImage := range uniqImagesByNs {
-		for v, i := range versionedImage {
+		for i, v := range versionedImage {
 			imagesInstalled = append(imagesInstalled, HelmChartInfo{
 				ChartName: i,
 				Version:   v,
