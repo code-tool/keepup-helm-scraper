@@ -26,7 +26,7 @@ func loadEnvFile() {
 	log.Println("Loading .env file.")
 	err := godotenv.Load(".env")
 	if err != nil {
-		panic("Error loading .env file.")
+		log.Fatalf("Error loading .env file: %v", err)
 	}
 }
 
@@ -46,7 +46,7 @@ func init() {
 		envName := refl.Type().Field(i).Name
 		envVal, foud := os.LookupEnv(envName)
 		if !foud {
-			panic("Environment [" + envName + "] not found.")
+			log.Fatalf("Environment not found: %v", envName)
 		}
 		refl.Field(i).SetString(envVal)
 	}

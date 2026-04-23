@@ -5,12 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"keepup-helm-scrapper/src/config"
-	"keepup-helm-scrapper/src/rules"
+	"keepup-helm-scraper/src/config"
+	"keepup-helm-scraper/src/rules"
 	"log"
 	"net/http"
 	"os"
 	"regexp"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,7 +34,6 @@ type ClusterInfo struct {
 func main() {
 	ctx := context.Background()
 
-	//kubeconfig, err := clientcmd.BuildConfigFromFlags("", "/home/.kube/minikube.cfg")
 	kubeconfig, err := rest.InClusterConfig()
 	if err != nil {
 		log.Fatalf("failed to get cluster config: %v", err)
@@ -51,7 +51,7 @@ func main() {
 
 	var versionRe = regexp.MustCompile(`(\d+)\.(\d+)(\.\d+)?`)
 
-	imagesByNs, err := CollectNamespaceImages(ctx, clientset)
+	imagesByNs, err := сollectNamespaceImages(ctx, clientset)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -104,7 +104,7 @@ func main() {
 	sendDataToAPI(jsonData)
 }
 
-func CollectNamespaceImages(
+func сollectNamespaceImages(
 	ctx context.Context,
 	client kubernetes.Interface,
 ) (map[string][]string, error) {
@@ -246,7 +246,7 @@ func sendDataToAPI(jsonData []byte) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("x-api-token", apiToken)
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Failed to send data to API: %v", err)

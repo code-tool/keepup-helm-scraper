@@ -1,4 +1,4 @@
-module keepup-helm-scrapper
+module keepup-helm-scraper
 
 go 1.25.0
 

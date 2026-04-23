@@ -49,6 +49,38 @@ data:
       detectionRegex: 'docker\.elastic\.co\/elasticsearch\/elasticsearch:'
       versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
 
+    - applicationName: 'kibana'
+      detectionRegex: 'docker\.elastic\.co\/kibana\/kibana:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
     - applicationName: 'synapse'
-      detectionRegex: 'ghcr\.io\/code-tool\/matrix-stack/synapse:'
+      detectionRegex: 'ghcr\.io\/code-tool\/matrix-stack\/synapse:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+    - applicationName: 'authentik'
+      detectionRegex: 'ghcr\.io\/goauthentik\/server:'
+      versionRegex: ':(\d+)\.(\d+)\.(\d+)$'
+
+    - applicationName: 'argocd'
+      detectionRegex: 'quay\.io\/argoproj\/argocd:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+    - applicationName: 'grafana'
+      detectionRegex: 'docker\.io\/grafana\/grafana:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+    - applicationName: 'flux-operator'
+      detectionRegex: 'ghcr\.io\/controlplaneio-fluxcd\/flux-operator:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+    - applicationName: 'vaultwarden'
+      detectionRegex: 'docker\.io\/vaultwarden\/server:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+    - applicationName: 'openbao'
+      detectionRegex: 'quay\.io\/openbao\/openbao:'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+    - applicationName: 'metallb'
+      detectionRegex: 'quay\.io\/metallb\/controller:'
       versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
