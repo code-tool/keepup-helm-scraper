@@ -6,6 +6,9 @@ image:
 cronjob:
   schedule: "0 */3 * * *"
   restartPolicy: Never
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  backoffLimit: 3
 
 rbac:
   create: true

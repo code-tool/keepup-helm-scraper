@@ -4,10 +4,12 @@ metadata:
   name: {{ .Release.Name }}
 spec:
   schedule: "{{ .Values.cronjob.schedule }}"
-  successfulJobsHistoryLimit: 3
-  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.cronjob.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.cronjob.failedJobsHistoryLimit }}
   jobTemplate:
     spec:
+      backoffLimit: {{ .Values.cronjob.backoffLimit }}
       template:
         spec:
           {{- if .Values.rbac.create }}
