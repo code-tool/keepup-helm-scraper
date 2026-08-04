@@ -13,6 +13,7 @@ type EnvConfig struct {
 	API_URL      string
 	API_TOKEN    string
 	CLUSTER_NAME string
+	TEAM         string
 	RULES_FILE   string
 }
 

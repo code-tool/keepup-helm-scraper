@@ -28,6 +28,7 @@ type HelmChartInfo struct {
 type ClusterInfo struct {
 	ClusterName string          `json:"cluster_name"`
 	KubeVersion string          `json:"kube_version"`
+	Team        string          `json:"team"`
 	HelmCharts  []HelmChartInfo `json:"helm_charts"`
 }
 
@@ -90,9 +91,11 @@ func main() {
 
 	clusterName := getClusterName()
 	kubeVersion := getKubernetesVersion(clientset)
+	team := getTeam()
 	output := ClusterInfo{
 		ClusterName: clusterName,
 		KubeVersion: kubeVersion,
+		Team:        team,
 		HelmCharts:  imagesInstalled,
 	}
 	jsonData, err := json.MarshalIndent(output, "", "  ")
@@ -269,6 +272,16 @@ func getClusterName() string {
 
 	log.Println("Cluster name not found, using default 'minikube'")
 	return "minikube"
+}
+
+func getTeam() string {
+	if envTeam := os.Getenv("TEAM"); envTeam != "" {
+		log.Printf("Using team from environment: %s", envTeam)
+		return envTeam
+	}
+
+	log.Println("Team not found, using empty value")
+	return ""
 }
 
 func getKubernetesVersion(clientset *kubernetes.Clientset) string {

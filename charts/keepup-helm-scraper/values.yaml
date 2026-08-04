@@ -15,6 +15,7 @@ rbac:
 
 env:
   CLUSTER_NAME: ''
+  TEAM: ''
   API_TOKEN: ''
   API_URL: ''
   APP_ENV: prod

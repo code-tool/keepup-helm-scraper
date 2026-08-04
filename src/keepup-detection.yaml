@@ -30,3 +30,8 @@ docker:
   - applicationName: 'headscale'
     detectionRegex: 'ghcr\.io\/gurucomputing\/headscale-ui:'
     versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
+
+  # f/e registry.gitlab.com/gitlab-org/gitlab-runner:alpine-v18.1.3
+  - applicationName: 'gitlab-runner'
+    detectionRegex: '\/gitlab-runner:'
+    versionRegex: ':([A-Za-z][A-Za-z0-9-]*-)?(v)?(\d+)\.(\d+)(\.(\d+))?((@sha)?.*)?$'
