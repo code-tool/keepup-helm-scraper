@@ -35,11 +35,11 @@ data:
 
     - applicationName: 'proxysql'
       detectionRegex: '\/proxysql:'
-      versionRegex: ':(\d+)\.(\d+)(\.\d+)?$'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
 
     - applicationName: 'nginx'
       detectionRegex: '(\/)?nginx:'
-      versionRegex: ':(\d+)\.(\d+)(\.\d+)?$'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
 
     - applicationName: 'headscale'
       detectionRegex: 'ghcr\.io\/gurucomputing\/headscale-ui:'
@@ -59,9 +59,9 @@ data:
 
     - applicationName: 'authentik'
       detectionRegex: 'ghcr\.io\/goauthentik\/server:'
-      versionRegex: ':(\d+)\.(\d+)\.(\d+)$'
+      versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
 
-    - applicationName: 'argocd'
+    - applicationName: 'argo-cd'
       detectionRegex: 'quay\.io\/argoproj\/argocd:'
       versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
 
