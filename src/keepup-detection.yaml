@@ -24,7 +24,7 @@ docker:
   # f/e nginx:1.25
   - applicationName: 'nginx'
     detectionRegex: '(\/)?nginx:'
-    versionRegex: ':(\d+)\.(\d+)(\.\d+)?$'
+    versionRegex: '(:(v)?(\d+)\.(\d+)(\.(\d+))?)((@sha)?.*)?$'
 
   # f/e ghcr.io/gurucomputing/headscale-ui:2025.08.23
   - applicationName: 'headscale'
