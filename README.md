@@ -26,6 +26,7 @@ On each run the scraper:
   "cluster_name": "prod-eu",
   "kube_version": "v1.29.4",
   "team": "platform",
+  "environment": "prod",
   "helm_charts": [
     { "chart_name": "redis", "version": "7.4.0", "namespace": "database" },
     { "chart_name": "gitlab-runner", "version": "18.1.3", "namespace": "ci" }
@@ -47,6 +48,7 @@ Set the mandatory variables:
 env:
   CLUSTER_NAME: 'unique-name-for-metrics-labels'
   TEAM: 'team-owning-this-cluster'
+  ENVIRONMENT: 'prod'  # or 'non-prod'
   API_URL: 'https://keepup.host/helm-cluster'
   API_TOKEN: 'api-token-to-access-the-API_URL'
 ```
@@ -70,6 +72,7 @@ All variables below are required — the process panics at startup if any is mis
 | `API_TOKEN` | `secret` | sent as the `x-api-token` header |
 | `CLUSTER_NAME` | `prod-eu` | reported as `cluster_name`; falls back to `minikube` if unset at runtime |
 | `TEAM` | `platform` | reported as `team`; empty string if unset at runtime |
+| `ENVIRONMENT` | `prod` | reported as `environment`; must be `prod` or `non-prod` (case-insensitive), defaults to `prod` if empty; any other value makes the process exit |
 | `RULES_FILE` | `./keepup-detection.yaml` | path to the detection rules YAML (defaults to `./keepup-detection.yaml`) |
 
 ## Detection rules

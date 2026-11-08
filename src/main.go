@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -29,6 +30,7 @@ type ClusterInfo struct {
 	ClusterName string          `json:"cluster_name"`
 	KubeVersion string          `json:"kube_version"`
 	Team        string          `json:"team"`
+	Environment string          `json:"environment"`
 	HelmCharts  []HelmChartInfo `json:"helm_charts"`
 }
 
@@ -92,10 +94,12 @@ func main() {
 	clusterName := getClusterName()
 	kubeVersion := getKubernetesVersion(clientset)
 	team := getTeam()
+	environment := getEnvironment()
 	output := ClusterInfo{
 		ClusterName: clusterName,
 		KubeVersion: kubeVersion,
 		Team:        team,
+		Environment: environment,
 		HelmCharts:  imagesInstalled,
 	}
 	jsonData, err := json.MarshalIndent(output, "", "  ")
@@ -282,6 +286,24 @@ func getTeam() string {
 
 	log.Println("Team not found, using empty value")
 	return ""
+}
+
+// getEnvironment returns the normalized ENVIRONMENT value. keepup accepts only
+// "prod" and "non-prod" (rejecting anything else with 400), so validate here
+// to fail fast instead of on every CronJob run.
+func getEnvironment() string {
+	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
+	switch env {
+	case "":
+		log.Println("Environment not found, using default 'prod'")
+		return "prod"
+	case "prod", "non-prod":
+		log.Printf("Using environment from environment: %s", env)
+		return env
+	default:
+		log.Fatalf("Invalid ENVIRONMENT %q: must be 'prod' or 'non-prod'", env)
+		return ""
+	}
 }
 
 func getKubernetesVersion(clientset *kubernetes.Clientset) string {
